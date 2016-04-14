@@ -19,17 +19,32 @@
 			background: linear-gradient(to right, rgba(110,32,67,1) 0%, rgba(110,32,67,1) 100%);
 			filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#532331', endColorstr='#b4a592', GradientType=1 );*/
 		}
+		#vertical-center {
+			display:block;
+			height:100vh;
+			position: absolute;
+			top:0;
+			bottom:0;
+			width: 100%;
+		}
 		#wrapper {
-			/*width: 500px;*/
-			margin: 0 auto;
-			padding: 20px;
+
+			/*vertical-align: middle;
+			width:100%;
+			    display: inline-block;
+			    height:50%;
+			    position: absolute;
+			    top: 0;
+			    bottom:0%;
+			    margin: auto;*/
+			/*padding: 20px;*/
 
 		    color: white;
-		    position: relative;
+		    /*position: relative;*/
 		    /*font-size: 6vh;*/
 		}
 		#header {
-			color: white;
+			/*color: white;*/
 			/*font-size: 3em;*/
 			margin-bottom: 20px;
 			text-align: center;
@@ -41,7 +56,7 @@
 			/*font-size: 8em;*/
 			/*width: 600px;*/
 			/*margin: 0 auto;*/
-			color: white;
+			/*color: white;*/
 			font-family: monospace;
 		}
 		.duration, .time {
@@ -55,6 +70,7 @@
 		}
 		#countdown .time {
 			color: white;
+			font-weight: 100;
 			width: 30%;
 		    margin-left: -25%;
 		}
@@ -112,6 +128,68 @@ a){var b=F.exec(a);b&&(b[1]=(b[1]||"").toLowerCase(),b[3]=b[3]&&new RegExp("(?:^
 
 /*global jQuery */
 /*!
+* FlexVerticalCenter.js 1.0
+*
+* Copyright 2011, Paul Sprangers http://paulsprangers.com
+* Released under the WTFPL license
+* http://sam.zoy.org/wtfpl/
+*
+* Date: Fri Oct 28 19:12:00 2011 +0100
+*/
+(function( $ ){
+
+  $.fn.flexVerticalCenter = function( options ) {
+    var settings = $.extend({
+      cssAttribute:   'margin-top', // the attribute to apply the calculated value to
+      verticalOffset: 0,            // the number of pixels to offset the vertical alignment by
+      parentSelector: null,         // a selector representing the parent to vertically center this element within
+      debounceTimeout: 25,          // a default debounce timeout in milliseconds
+      deferTilWindowLoad: false     // if true, nothing will take effect until the $(window).load event
+    }, options || {});
+
+    return this.each(function(){
+      var $this   = $(this); // store the object
+      var debounce;
+
+      // recalculate the distance to the top of the element to keep it centered
+      var resizer = function () {
+
+        var parentHeight = (settings.parentSelector && $this.parents(settings.parentSelector).length) ?
+          $this.parents(settings.parentSelector).first().height() : $this.parent().height();
+
+        $this.css(
+          settings.cssAttribute, ( ( ( parentHeight - $this.height() ) / 2 ) + parseInt(settings.verticalOffset) )
+        );
+        if (settings.complete !== undefined) {
+         settings.complete();
+        }
+      };
+
+      // Call on resize. Opera debounces their resize by default.
+      $(window).resize(function () {
+          clearTimeout(debounce);
+          debounce = setTimeout(resizer, settings.debounceTimeout);
+      });
+
+      if (!settings.deferTilWindowLoad) {
+        // call it once, immediately.
+        resizer();
+      }
+
+      // Call again to set after window (frames, images, etc) loads.
+      $(window).load(function () {
+          resizer();
+      });
+
+    });
+
+  };
+
+})( jQuery );
+
+
+/*global jQuery */
+/*!
 * FitText.js 1.2
 *
 * Copyright 2011, Dave Rupert http://daverupert.com
@@ -154,47 +232,54 @@ a){var b=F.exec(a);b&&(b[1]=(b[1]||"").toLowerCase(),b[3]=b[3]&&new RegExp("(?:^
 
 })( jQuery );
 </script>
-<script>
-	$(function() {
-		var endDate = 'January 7, 2017';
-	    $('#countdown').countdown({
-	        date: endDate,
-			render: function(data) {
-				var years = this.leadingZeros(data.years, 4);
-				var days = this.leadingZeros(data.days, 3);
-				var hours = this.leadingZeros(data.hours, 2);
-				var min = this.leadingZeros(data.min, 2);
-				var sec = this.leadingZeros(data.sec, 2);
-				$(this.el).html(
-					"<div class='days'>" +
-						"<span class='time'>" + this.leadingZeros(data.days, 3) + " </span>" +
-						"<span class='duration'>days</span>" +
-					"</div>" +
-					"<div class='hours'>" +
-						"<span class='time'>" + this.leadingZeros(data.hours, 2) + " </span>" +
-						"<span class='duration'>hours</span>" +
-					"</div>" +
-					"<div class='min'>" +
-						"<span class='time'>" + this.leadingZeros(data.min, 2) + " </span>" +
-						"<span class='duration'>minutes</span>" +
-					"</div>" +
-					"<div class='sec'>" +
-						"<span class='time'>" + this.leadingZeros(data.sec, 2) + " </span>" +
-						"<span class='duration'>seconds</span>" +
-					"</div>"
-				);
-			}
-	    });
-		 $("#wrapper").fitText(1.1);
-	});
-</script>
-<div id="wrapper">
-	<div class="animatedOne fadeIn">
-		<div id="header">Vogel Wedding Countdown</div>
-	</div>
-	<div class="animatedTwo fadeIn">
-		<div id="countdown"></div>
+<div id="vertical-center">
+	<div id="wrapper">
+		<div class="animatedOne fadeIn">
+			<div id="header">Vogel Wedding Countdown</div>
+		</div>
+		<div class="animatedTwo fadeIn">
+			<div id="countdown"></div>
+		</div>
 	</div>
 </div>
+<script>
+$(function() {
+	var endDate = 'January 7, 2017';
+	$('#countdown').countdown({
+		date: endDate,
+		render: function(data) {
+			var years = this.leadingZeros(data.years, 4);
+			var days = this.leadingZeros(data.days, 3);
+			var hours = this.leadingZeros(data.hours, 2);
+			var min = this.leadingZeros(data.min, 2);
+			var sec = this.leadingZeros(data.sec, 2);
+			$(this.el).html(
+				"<div class='days'>" +
+				"<span class='time'>" + this.leadingZeros(data.days, 3) + " </span>" +
+				"<span class='duration'>days</span>" +
+				"</div>" +
+				"<div class='hours'>" +
+				"<span class='time'>" + this.leadingZeros(data.hours, 2) + " </span>" +
+				"<span class='duration'>hours</span>" +
+				"</div>" +
+				"<div class='min'>" +
+				"<span class='time'>" + this.leadingZeros(data.min, 2) + " </span>" +
+				"<span class='duration'>minutes</span>" +
+				"</div>" +
+				"<div class='sec'>" +
+				"<span class='time'>" + this.leadingZeros(data.sec, 2) + " </span>" +
+				"<span class='duration'>seconds</span>" +
+				"</div>"
+			);
+		}
+	});
+	$("#wrapper").fitText(1.1);
+});
+
+$('#wrapper').flexVerticalCenter({
+	verticalOffset: -50
+});
+
+</script>
 </body>
 </html>
